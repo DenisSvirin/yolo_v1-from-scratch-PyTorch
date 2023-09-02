@@ -71,4 +71,4 @@ class Pascal_Images(Dataset):
         for i, (_x, _y) in enumerate(zip(idx_x, idx_y)):
             labels[_x, _y] = data_array[i]
 
-        return image, labels.flatten()
+        return image, labels
