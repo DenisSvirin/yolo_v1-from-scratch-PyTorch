@@ -26,6 +26,9 @@ class Pascal_Images(Dataset):
         data_path = "/content/labels/" + data_file
 
         image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(image, (448, 448))
+
         image_data = pd.read_csv(data_path, header=None, sep=" ")
         # image_data = [class, x, y, bb_x, bb_y]
         cols = image_data.columns
@@ -38,9 +41,9 @@ class Pascal_Images(Dataset):
         # y coordinates relative to the cell
         image_data["rel_y"] = image_data[cols[2]] / 64 % 1
         # which cell contains object center (x axis)
-        image_data["cell_x"] = image_data[cols[1]] // 64 + 1
+        image_data["cell_x"] = image_data[cols[1]] // 64
         # which cell contains object center (y axis)
-        image_data["cell_y"] = image_data[cols[2]] // 64 + 1
+        image_data["cell_y"] = image_data[cols[2]] // 64
         # p_c if there is object in the cell
         image_data["p_c"] = 1
 
@@ -68,4 +71,4 @@ class Pascal_Images(Dataset):
         for i, (_x, _y) in enumerate(zip(idx_x, idx_y)):
             labels[_x, _y] = data_array[i]
 
-        return image, labels
+        return image, labels.flatten()
