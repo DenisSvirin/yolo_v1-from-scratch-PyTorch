@@ -17,10 +17,10 @@ class Yolo_loss(nn.Module):
         obj_exist = labels[..., 0].unsqueeze(3)
 
         # Box predicion loss
+        true_bb = labels[..., 1:5]
 
-        true_bb = labels[2:6]
-        bb1 = predictions[..., 2:6]
-        bb2 = predictions[..., 7:12]
+        bb1 = predictions[..., 1:5]
+        bb2 = predictions[..., 6:10]
 
         IoU_for_bb1 = IoU(bb1, true_bb)
         IoU_for_bb2 = IoU(bb2, true_bb)
@@ -30,15 +30,38 @@ class Yolo_loss(nn.Module):
 
         box_pred = obj_exist * ((1 - best_bb_ind) * bb1 + best_bb_ind * bb2)
 
-        box_center_loss = nn.mse(box_pred[..., 0:2], labels[..., 1:3])
+        box_center_loss = self.mse(box_pred[..., 0:2], obj_exist * labels[..., 1:3])
 
         bb_shape_pred = torch.sign(box_pred[..., 2:4]) * torch.sqrt(
             torch.abs(box_pred[..., 2:4] + 1e-5)
         )
-        box_shape_loss = nn.mse(bb_shape_pred, torch.sqrt(labels[..., 3:5]))
+        box_shape_loss = self.mse(bb_shape_pred, obj_exist * torch.sqrt(labels[..., 3:5]))
+
+        # object loss
+        obj_pred = obj_exist * ((1 - best_bb_ind) * predictions[..., 0:1]
+        + best_bb_ind * predictions[..., 5:6])
+        obj_true = obj_exist * labels[..., 0:1]
+
+        obj_loss = self.mse(obj_pred, obj_true)
+
+        # no object loss
+        noobj_pred_bb1 = (1 - obj_exist) * predictions[..., 0:1]
+        noobj_pred_bb2 = (1 - obj_exist) * predictions[..., 5:6]
+        noobj_true = (1 - obj_exist) * labels[..., 0:1]
+
+        noobj_loss_bb1 = self.mse(noobj_pred_bb1, noobj_true)
+        noobj_loss_bb2 = self.mse(noobj_pred_bb2, noobj_true)
+
+        noobj_loss = noobj_loss_bb1 + noobj_loss_bb2
 
         # class loss
         pred_classes = predictions[..., 10:31]
-        true_classes = labels[..., 10:31]
+        true_classes = labels[..., 5:26]
 
-        class_loss = self.mse(obj_exist * pred_classes, obj_prob * true_classes)
+        class_loss = self.mse(obj_exist * pred_classes, obj_exist * true_classes)
+
+        # total loss
+        loss = (self.l_coord * box_center_loss + self.l_coord * box_shape_loss +
+        obj_loss + self.l_noobj * noobj_loss + class_loss)
+
+        return loss
