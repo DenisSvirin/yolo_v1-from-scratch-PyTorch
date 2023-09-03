@@ -27,9 +27,8 @@ def IoU(box_pred, box_true):
     intersection_x2 = torch.min(box_pred_x2, box_true_x2)
     intersection_y2 = torch.min(box_pred_y2, box_true_y2)
 
-    intersection = (intersection_x2 - intersection_x1) * (
-        intersection_y2 - intersection_y1
-    )
+    intersection = (intersection_x2 - intersection_x1).clamp(0) * (
+        intersection_y2 - intersection_y1).clamp(0)
 
     intersection = (
         0
@@ -39,7 +38,6 @@ def IoU(box_pred, box_true):
 
     box_pred_area = (box_pred_x2 - box_pred_x1) * (box_pred_y2 - box_pred_y1)
     box_true_area = (box_true_x2 - box_true_x1) * (box_true_y2 - box_true_y1)
-    print(intersection_x1, intersection_x2, intersection_y1, intersection_y2)
 
     union = box_pred_area + box_true_area - intersection
 
