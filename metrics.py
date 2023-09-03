@@ -30,11 +30,6 @@ def IoU(box_pred, box_true):
     intersection = (intersection_x2 - intersection_x1).clamp(0) * (
         intersection_y2 - intersection_y1).clamp(0)
 
-    intersection = (
-        0
-        if (intersection_x1 >= box_pred_x2 or intersection_y1 >= box_pred_y2)
-        else intersection
-    )
 
     box_pred_area = (box_pred_x2 - box_pred_x1) * (box_pred_y2 - box_pred_y1)
     box_true_area = (box_true_x2 - box_true_x1) * (box_true_y2 - box_true_y1)
