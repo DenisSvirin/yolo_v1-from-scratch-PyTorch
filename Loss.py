@@ -1,7 +1,6 @@
-from metrics import IoU
 import torch.nn as nn
 import torch
-
+from metrics import IoU
 
 class Yolo_loss(nn.Module):
     def __init__(self, c=20):
@@ -35,11 +34,15 @@ class Yolo_loss(nn.Module):
         bb_shape_pred = torch.sign(box_pred[..., 2:4]) * torch.sqrt(
             torch.abs(box_pred[..., 2:4] + 1e-5)
         )
-        box_shape_loss = self.mse(bb_shape_pred, obj_exist * torch.sqrt(labels[..., 3:5]))
+        box_shape_loss = self.mse(
+            bb_shape_pred, obj_exist * torch.sqrt(labels[..., 3:5])
+        )
 
         # object loss
-        obj_pred = obj_exist * ((1 - best_bb_ind) * predictions[..., 0:1]
-        + best_bb_ind * predictions[..., 5:6])
+        obj_pred = obj_exist * (
+            (1 - best_bb_ind) * predictions[..., 0:1]
+            + best_bb_ind * predictions[..., 5:6]
+        )
         obj_true = obj_exist * labels[..., 0:1]
 
         obj_loss = self.mse(obj_pred, obj_true)
@@ -61,7 +64,12 @@ class Yolo_loss(nn.Module):
         class_loss = self.mse(obj_exist * pred_classes, obj_exist * true_classes)
 
         # total loss
-        loss = (self.l_coord * box_center_loss + self.l_coord * box_shape_loss +
-        obj_loss + self.l_noobj * noobj_loss + class_loss)
+        loss = (
+            self.l_coord * box_center_loss
+            + self.l_coord * box_shape_loss
+            + obj_loss
+            + self.l_noobj * noobj_loss
+            + class_loss
+        )
 
         return loss
