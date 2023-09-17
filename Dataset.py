@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from torch.utils.data import Dataset
-
+import torch
+import cv2
 
 
 class Pascal_Images(Dataset):
@@ -13,21 +14,22 @@ class Pascal_Images(Dataset):
         self.enc.fit(np.array([i for i in range(20)]).reshape(-1, 1))
 
     def __len__(self):
-        return len(data)
+        return len(self.data)  # <---
 
     def __getitem__(self, index):
         # Grid 7 x 7
         # image size 448 x 448
 
         image_file = self.data.iloc[index][0]
-        image_path = "/content/images/" + image_file
+        image_path = "data/images/" + image_file
 
         data_file = self.data.iloc[index][1]
-        data_path = "/content/labels/" + data_file
+        data_path = "data/labels/" + data_file
 
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = cv2.resize(image, (448, 448))
+        image = np.transpose(image, (2, 0, 1))
 
         image_data = pd.read_csv(data_path, header=None, sep=" ")
         # image_data = [class, x, y, bb_x, bb_y]
@@ -61,7 +63,6 @@ class Pascal_Images(Dataset):
         idx_x = image_data[["cell_x"]].astype(int).to_numpy().flatten()
         idx_y = image_data[["cell_y"]].astype(int).to_numpy().flatten()
 
-
         # final label
         # 5 - predictions for each grid cell (p_c,
         # rel_x, rel_y, width, height)
@@ -71,4 +72,4 @@ class Pascal_Images(Dataset):
         for i, (_x, _y) in enumerate(zip(idx_x, idx_y)):
             labels[_x, _y] = data_array[i]
 
-        return image, labels
+        return torch.tensor(image).float(), labels
