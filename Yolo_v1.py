@@ -1,9 +1,13 @@
 import torch
 import torch.nn as nn
 
+
 class Yolo_v1(nn.Module):
-    def __init__(self):
+    def __init__(self, bb_per_cell=2, grid_cells=7, num_classes=20):
         super().__init__()
+        self.bb_per_cell = bb_per_cell
+        self.grid_cells = grid_cells
+        self.num_classes = num_classes
         self.darknet = nn.Sequential(
             # First batch
             nn.Conv2d(
@@ -93,12 +97,16 @@ class Yolo_v1(nn.Module):
                 in_channels=1024, out_channels=1024, kernel_size=3, padding=1
             ),  # 7 x 7 -> 7 x 7
         )
-        # REDO THIS PART
+
         self.fc = nn.Sequential(
             nn.Linear(50176, 1000),  # 7 * 7 * 1024 = 50176
             nn.ELU(),
             nn.Dropout(0.45),
-            nn.Linear(1000, 30),
+            nn.Linear(
+                1000,
+                self.grid_cells**2
+                * (self.num_classes + 5 * self.bb_per_cell),  # <---
+            ),
         )
 
     def forward(self, X):
