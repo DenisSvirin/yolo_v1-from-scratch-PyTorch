@@ -2,6 +2,8 @@ Yolo v1 implementation from scratch using pytorch
 
 Model was tested on 8 examples due to lack of computational power.
 
+Dataset: <a href='https://www.kaggle.com/datasets/734b7bcb7ef13a045cbdd007a3c19874c2586ed0b02b4afc86126e89d00af8d2'> Kaggle </a>
+
 
 ![Unknown-16](https://github.com/DenisSvirin/yolo_v1-from-scratch-PyTorch/assets/109875331/fc236ca1-3219-486a-98f3-c1f05abcb570)
 ![Unknown-17](https://github.com/DenisSvirin/yolo_v1-from-scratch-PyTorch/assets/109875331/92ce7709-53b4-4e74-8dfe-9b1e3e8ccbc5)
